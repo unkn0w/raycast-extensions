@@ -3,6 +3,7 @@ import { FormValidation, useForm } from "@raycast/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FormValues } from "../types";
 
+import { getAddLinkSettings, isProbablyUrl, readClipboardText } from "../helpers/addLinkSettings";
 import { buildCollectionsOptions } from "../helpers/collections";
 import { useCollections } from "../hooks/useCollections";
 import { useTags } from "../hooks/useTags";
@@ -64,6 +65,15 @@ export const BookmarkForm = (props: BookmarkFormProps) => {
   const [dropdownValue, setDropdownValue] = useState(props.defaultValues?.collection ?? "-1");
   const [showCollectionCreation, setShowCollectionCreation] = useState(false);
   const linkRef = useRef<string>(props.defaultValues?.link ?? "");
+  const addLinkSettings = useMemo(() => (mode === "edit" ? null : getAddLinkSettings()), [mode]);
+  const defaultCollectionRef = useRef(props.defaultValues?.collection ?? "-1");
+  const defaultTagsRef = useRef<string[]>(props.defaultValues?.tags ?? []);
+  const didApplyDefaults = useRef(false);
+  const pasteState = useRef<"idle" | "pending" | "done">("idle");
+  const defaultLinkRef = useRef(props.defaultLink);
+  const defaultValuesRef = useRef(props.defaultValues);
+  defaultLinkRef.current = props.defaultLink;
+  defaultValuesRef.current = props.defaultValues;
   const collections = useMemo(() => {
     return collectionsData?.result ? buildCollectionsOptions(collectionsData) : [];
   }, [collectionsData]);
@@ -88,7 +98,10 @@ export const BookmarkForm = (props: BookmarkFormProps) => {
 
         if (response.status === 200) {
           if (mode !== "edit") {
-            reset({ link: "", collection: "-1", tags: [] });
+            reset({ link: "", collection: defaultCollectionRef.current, tags: defaultTagsRef.current });
+            setDropdownValue(defaultCollectionRef.current);
+            setShowCollectionCreation(false);
+            linkRef.current = "";
             focus("link");
           }
           props.onSaved?.();
@@ -113,9 +126,69 @@ export const BookmarkForm = (props: BookmarkFormProps) => {
       link: props.defaultLink ?? "",
       title: undefined,
       collection: "-1",
+      tags: [],
       ...props.defaultValues,
     },
   });
+
+  useEffect(() => {
+    if (!addLinkSettings || didApplyDefaults.current) {
+      return;
+    }
+
+    didApplyDefaults.current = true;
+    const defaults = defaultValuesRef.current;
+    const collection = defaults?.collection ?? addLinkSettings.defaultCollection;
+    const tags = defaults?.tags ?? addLinkSettings.defaultTags;
+    defaultCollectionRef.current = collection;
+    defaultTagsRef.current = tags;
+    setDropdownValue(collection);
+    setValue("collection", collection);
+    setValue("tags", tags);
+  }, [mode, addLinkSettings, setValue]);
+
+  useEffect(() => {
+    if (mode === "edit" || props.isLoading || !addLinkSettings?.pasteClipboard || pasteState.current === "done") {
+      return;
+    }
+
+    if (defaultLinkRef.current || defaultValuesRef.current?.link) {
+      pasteState.current = "done";
+      return;
+    }
+
+    let cancelled = false;
+    pasteState.current = "pending";
+
+    (async () => {
+      const link = await readClipboardText();
+      if (cancelled) {
+        return;
+      }
+
+      pasteState.current = "done";
+      if (!link || defaultLinkRef.current) {
+        return;
+      }
+
+      setValue("link", link);
+      linkRef.current = link;
+
+      if (isProbablyUrl(link)) {
+        const title = await getLinkTitle(link);
+        if (!cancelled && title && !defaultLinkRef.current) {
+          setValue("title", title);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (pasteState.current !== "done") {
+        pasteState.current = "idle";
+      }
+    };
+  }, [mode, props.isLoading, addLinkSettings?.pasteClipboard, setValue]);
 
   useEffect(() => {
     if (props.defaultLink) {

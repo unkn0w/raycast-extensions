@@ -263,6 +263,98 @@
       "type": "appPicker",
       "required": false,
       "description": "Specify a secondary browser to use for opening bookmarks"
+    },
+    {
+      "name": "pasteClipboardLink",
+      "type": "checkbox",
+      "required": false,
+      "title": "Dodawanie linka",
+      "description": "Wkleja zawartość schowka do pola Link przy dodawaniu. Nie nadpisuje linku z karty przeglądarki.",
+      "default": false,
+      "label": "Autowklejanie linka"
+    },
+    {
+      "name": "defaultCollection",
+      "type": "dropdown",
+      "required": false,
+      "title": "Domyślna kategoria",
+      "description": "Kolekcja używana przy dodawaniu linka.",
+      "default": "-1",
+      "data": [
+        {
+          "title": "Unsorted",
+          "value": "-1"
+        },
+        {
+          "title": "Archiwum unknowNews",
+          "value": "23948204"
+        },
+        {
+          "title": "unknowNews",
+          "value": "17543501"
+        },
+        {
+          "title": "Propozycje (z newsletterów)",
+          "value": "72295523"
+        },
+        {
+          "title": "Na za tydzień",
+          "value": "56647411"
+        },
+        {
+          "title": "GitHub",
+          "value": "51537280"
+        },
+        {
+          "title": "Filmy z YouTube",
+          "value": "41843138"
+        },
+        {
+          "title": "Odrzuty z unknowNews",
+          "value": "32447276"
+        },
+        {
+          "title": "Propozycje",
+          "value": "29980324"
+        },
+        {
+          "title": "Pomysły na filmy",
+          "value": "17752638"
+        },
+        {
+          "title": "Pomysły biznesowe",
+          "value": "17608682"
+        },
+        {
+          "title": "MIKR.US",
+          "value": "17608675"
+        },
+        {
+          "title": "nauka nowego",
+          "value": "17543512"
+        },
+        {
+          "title": "użyteczne",
+          "value": "17543504"
+        },
+        {
+          "title": "do przeczytania",
+          "value": "17543503"
+        },
+        {
+          "title": "Propozycje (od czytelników)",
+          "value": "74905343"
+        }
+      ]
+    },
+    {
+      "name": "defaultHashtags",
+      "type": "textfield",
+      "required": false,
+      "title": "Domyślne tagi",
+      "description": "Kilka tagów oddzielonych przecinkami. Dopisywane przy dodawaniu linka.",
+      "placeholder": "praca, później",
+      "default": ""
     }
   ],
   "ai": {

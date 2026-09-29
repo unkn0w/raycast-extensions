@@ -1,5 +1,6 @@
 import { closeMainWindow, getPreferenceValues, LaunchProps, Toast } from "@raycast/api";
 
+import { getAddLinkSettings } from "./helpers/addLinkSettings";
 import { createBookmark, getLinkTitle } from "./helpers/utils";
 
 export default async function QuickAddBookmark(props: LaunchProps<{ arguments: Arguments.QuickAdd }>) {
@@ -21,17 +22,16 @@ export default async function QuickAddBookmark(props: LaunchProps<{ arguments: A
       throw new Error("Invalid URL");
     }
 
-    // Auto-fetch title
+    const addLinkSettings = getAddLinkSettings();
     const title = await getLinkTitle(url);
 
-    // Create bookmark in Unsorted collection (-1)
     const response = await createBookmark({
       preferences,
       values: {
         link: url,
         title: title || url,
-        collection: "-1", // Unsorted
-        tags: [],
+        collection: addLinkSettings.defaultCollection,
+        tags: addLinkSettings.defaultTags,
       },
       showCollectionCreation: false,
     });
